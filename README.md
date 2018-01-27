@@ -1,0 +1,2 @@
+# git-aggregator
+Maven Project
