@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.3.xsd
+		http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-4.3.xsd
+		http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-4.3.xsd">
+	
+	<!-- 数据库 -->
+	<!-- <context:property-placeholder location="classpath:config/jdbc.properties" ignore-unresolvable="true" /> -->
+
+<bean id="preferencesPlaceholderConfigurer"
+	class="org.springframework.beans.factory.config.PreferencesPlaceholderConfigurer"
+	xmlns:beans="http://www.springframework.org/schema/beans"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.3.xsd">
+		<property name="locations" value="classpath:config/jdbc.properties"></property>
+	</bean>
+
+<!-- C3P0 连接池 -->
+	<!-- data source destroy-method="close" class 接口类 method 方法  -->  
+    <!-- <bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource" destroy-method="close"> -->  
+    <bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource" >  
+        <property name="driverClass">  
+            <value>${datasource.driverClassName}</value>  
+        </property>  
+        <property name="jdbcUrl">  
+            <value>${datasource.url}</value>  
+        </property>  
+        <property name="user">  
+            <value>${datasource.username}</value>  
+        </property>  
+        <property name="password">  
+            <value>${datasource.password}</value>  
+        </property>  
+    	<property name="loginTimeout">
+    		<value>${c3p0.loginTimeout}</value>
+    	</property>
+        <!--当连接池中的连接耗尽的时候c3p0一次同时获取的连接数。Default: 3 -->   
+        <property name="acquireIncrement">  
+            <value>${c3p0.acquireIncrement}</value>  
+        </property>  
+        <!--初始化时获取三个连接，取值应在minPoolSize与maxPoolSize之间。Default: 3 -->   
+        <property name="initialPoolSize">  
+            <value>${c3p0.initialPoolSize}</value>  
+        </property>  
+        <property name="minPoolSize">  
+            <value>${c3p0.minPoolSize}</value>  
+        </property>  
+        <property name="maxPoolSize">  
+            <value>${c3p0.maxPoolSize}</value>  
+        </property>  
+        <!--最大空闲时间,60秒内未使用则连接被丢弃。若为0则永不丢弃。Default: 0 -->   
+        <property name="maxIdleTime">  
+            <value>${c3p0.maxIdleTime}</value>  
+        </property>  
+        <!--每60秒检查所有连接池中的空闲连接。Default: 0 -->   
+        <property name="idleConnectionTestPeriod">  
+            <value>${c3p0.idleConnectionTestPeriod}</value>  
+        </property>  
+        <!-- JDBC的标准参数，用以控制数据源内加载的PreparedStatements数量。但由于预缓存的statements属于单个connection而不是整个连接池。所以设置这个参数需要考虑到多方面的因素。如果maxStatements与maxStatementsPerConnection均为0，则缓存被关闭。Default: 0-->   
+        <property name="maxStatements">  
+            <value>${c3p0.maxStatements}</value>  
+        </property>  
+        <!-- c3p0是异步操作的，缓慢的JDBC操作通过帮助进程完成。扩展这些操作可以有效的提升性能 通过多线程实现多个操作同时被执行。Default: 3-->   
+        <property name="numHelperThreads">  
+            <value>${c3p0.numHelperThreads}</value>  
+        </property>  
+    </bean>	
+
+	
+	<!-- mybatis sqlSessionFactory -->
+ 	<bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<property name="dataSource" ref="dataSource" /><!-- dataSource属性指定要用到的连接池 -->
+		<property name="configLocation" value="classpath:config/mybatis_config.xml" /><!-- configLocation属性指定mybatis的核心配置文件 -->
+	</bean>
+
+	<!-- spring 事务 -->
+	<bean name="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource" ref="dataSource"></property>
+	</bean>
+	
+ <tx:advice id="dcTxAdvice" transaction-manager="transactionManager">
+    <tx:attributes>
+      <tx:method name="delete*" propagation="REQUIRED" read-only="false" rollback-for="java.lang.Exception,java.lang.RuntimeException" />
+      <tx:method name="insert*" propagation="REQUIRED" read-only="false" rollback-for="java.lang.Exception,java.lang.RuntimeException" />
+      <tx:method name="update*" propagation="REQUIRED" read-only="false" rollback-for="java.lang.Exception,java.lang.RuntimeException" />
+      <tx:method name="save*" propagation="REQUIRED" read-only="false" rollback-for="java.lang.Exception,java.lang.RuntimeException" />
+      
+      <tx:method name="find*" propagation="SUPPORTS" read-only="true"/>
+      <tx:method name="get*" propagation="SUPPORTS" read-only="true"/>
+      <tx:method name="select*" propagation="SUPPORTS" read-only="true"/>
+    </tx:attributes>
+  </tx:advice>
+  
+  <aop:config>
+    <aop:pointcut id="pc" expression="execution(public * com.cn.dachao.yxw.service.*.*(..))" />
+    <aop:advisor pointcut-ref="pc" advice-ref="dcTxAdvice" />
+  </aop:config>
+	
+	<bean id="dataSourceSqlS" class="com.mchange.v2.c3p0.ComboPooledDataSource" >
+		<property name="user">
+			<value>${sqlserver.userName}</value>
+		</property>		
+		<property name="password">
+			<value>${sqlserver.password}</value>
+		</property>		
+		<property name="jdbcUrl">
+			<value>${sqlserver.jdbcUrl}</value>
+		</property>		
+		<property name="driverClass">
+			<value>${sqlserver.driverClass}</value>
+		</property>		
+	</bean>
+ 	<bean id="sqlServer" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<property name="dataSource" ref="dataSourceSqlS" />
+		<property name="configLocation" value="classpath:config/mybatis_sqlserver_config.xml" />
+	</bean>
+</beans>

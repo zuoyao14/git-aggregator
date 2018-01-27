@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.3.xsd">
+
+	<!-- 
+	<bean id="serviceFactory" class="com.cn.dachao.yxw.service.ServiceFactory"
+		lazy-init="true">
+		<property name="basicsService" ref="basicsService"></property>
+	</bean>
+
+	<bean id="basicsService" class="com.cn.dachao.yxw.service.BasicsService"
+		lazy-init="true">
+		<property name="serviceFactory" ref="serviceFactory"></property>
+		<property name="basicsMapper" ref="basicsMapper"></property>
+	</bean> 
+	-->
+
+</beans>
